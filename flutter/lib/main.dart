@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -103,12 +104,6 @@ Future<void> main(List<String> args) async {
 }
 
 Future<void> initEnv(String appType) async {
-  setServerConfiguration(
-    idServer: "159.195.71.78:21116",
-    relayServer: "159.195.71.78:21117",
-    key: "yNbQyWqKe4xn9cIboWSjPthxVbQodjXeFMTZTC5R+5w=",
-  );
-
   // global shared preference
   await platformFFI.init(appType);
   // global FFI, use this **ONLY** for global configuration
@@ -119,6 +114,20 @@ Future<void> initEnv(String appType) async {
   _registerEventHandler();
   // Update the system theme.
   updateSystemWindowTheme();
+  
+  if (kDebugMode ) {
+    setServerConfiguration(
+      idServer: "172.20.10.2:21116",
+      relayServer: "172.20.10.2:21117",
+      key: "CSYkbZuo5mh8qB+ekCxBIOgK6Zg7ItnE3EjDVR3nqFk=",
+    );
+  } else {
+    setServerConfiguration(
+      idServer: "159.195.71.78:21116",
+      relayServer: "159.195.71.78:21117",
+      key: "yNbQyWqKe4xn9cIboWSjPthxVbQodjXeFMTZTC5R+5w=",
+    );
+  }
 }
 
 void runMainApp(bool startService) async {

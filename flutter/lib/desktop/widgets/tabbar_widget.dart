@@ -327,11 +327,6 @@ class _DesktopTabState extends State<DesktopTab>
 
   _DesktopTabState() : super();
 
-  static RxString tablabelGetter(String peerId) {
-    final alias = bind.mainGetPeerOptionSync(id: peerId, key: 'alias');
-    return RxString(getDesktopTabLabel(peerId, alias));
-  }
-
   @override
   void initState() {
     super.initState();

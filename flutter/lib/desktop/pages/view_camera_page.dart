@@ -22,9 +22,6 @@ import '../widgets/remote_toolbar.dart';
 import '../widgets/kb_layout_type_chooser.dart';
 import '../widgets/tabbar_widget.dart';
 
-import 'package:flutter_hbb/native/custom_cursor.dart'
-    if (dart.library.html) 'package:flutter_hbb/web/custom_cursor.dart';
-
 final SimpleWrapper<bool> _firstEnterImage = SimpleWrapper(false);
 
 // Used to skip session close if "move to new window" is clicked.
@@ -621,18 +618,6 @@ class _ImagePaintState extends State<ImagePaint> {
       height: size.height,
       child: Stack(children: children),
     );
-  }
-
-  MouseCursor _buildCustomCursor(BuildContext context, double scale) {
-    final cursor = Provider.of<CursorModel>(context);
-    final cache = cursor.cache ?? preDefaultCursor.cache;
-    return buildCursorOfCache(cursor, scale, cache);
-  }
-
-  MouseCursor _buildDisabledCursor(BuildContext context, double scale) {
-    final cursor = Provider.of<CursorModel>(context);
-    final cache = preForbiddenCursor.cache;
-    return buildCursorOfCache(cursor, scale, cache);
   }
 
   Widget _buildCrossScrollbarFromLayout(
