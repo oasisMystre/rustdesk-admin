@@ -1,5 +1,8 @@
 name: Build the flutter version of the RustDesk
 
+permissions:
+  contents: write
+
 on:
   workflow_call:
     inputs:
@@ -71,7 +74,7 @@ jobs:
         with:
           name: bridge-artifact
           path: ./
-          
+
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
@@ -232,7 +235,10 @@ jobs:
         shell: bash
         run: |
           BASE_URL=${{ env.SIGN_BASE_URL }} SECRET_KEY=${{ secrets.SIGN_SECRET_KEY }} python3 res/job.py sign_files ./SignOutput
-
+      - name: Create tag if missing
+        run: |
+          git tag ${{ env.TAG_NAME }} || true
+          git push origin ${{ env.TAG_NAME }} || true
       - name: Publish Release
         uses: softprops/action-gh-release@v1
         if: env.UPLOAD_ARTIFACT == 'true'
