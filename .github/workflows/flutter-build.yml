@@ -1,8 +1,5 @@
 name: Build the flutter version of the RustDesk
 
-permissions:
-  contents: write
-
 on:
   workflow_call:
     inputs:
@@ -12,6 +9,7 @@ on:
       upload-tag:
         type: string
         default: "nightly"
+
 env:
   VERSION: "0.0.0"
   RUST_VERSION: "1.92.0"
@@ -26,6 +24,9 @@ env:
   MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
+
+permissions:
+  contents: write
 
 jobs:
   generate-bridge:
