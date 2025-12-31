@@ -13,7 +13,7 @@ env:
   VERSION: "0.0.0"
   RUST_VERSION: "1.92.0"
   MAC_RUST_VERSION: "1.92.0"
-  SCITER_RUST_VERSION: "1.92.0" 
+  SCITER_RUST_VERSION: "1.92.0"
   LLVM_VERSION: "15.0.6"
   FLUTTER_VERSION: "3.38.5"
   TAG_NAME: "${{ inputs.upload-tag }}"
@@ -71,6 +71,13 @@ jobs:
         with:
           name: bridge-artifact
           path: ./
+          
+      - name: Cache Windows Build
+        id: cache-windows-build
+        uses: actions/cache@v3
+        with:
+          path: /tmp/
+          key: flutter-windows
 
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
@@ -82,7 +89,7 @@ jobs:
         with:
           channel: "stable"
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
@@ -162,10 +169,10 @@ jobs:
           } catch {
               Write-Host "Ingore the printer driver error."
           }
-      - name: Build Rustdesk failed 
+      - name: Build Rustdesk failed
         if: steps.build_rustdesk.outcome == 'failure'
         run: exit 0
-        
+
       - name: find Runner.res
         continue-on-error: true
         shell: bash
