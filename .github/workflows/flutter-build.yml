@@ -13,17 +13,15 @@ on:
 env:
   VERSION: "0.0.0"
   RUST_VERSION: "1.92.0"
-  MAC_RUST_VERSION: "1.92.0"
-  SCITER_RUST_VERSION: "1.92.0"
   LLVM_VERSION: "15.0.6"
   FLUTTER_VERSION: "3.38.5"
+  MAC_RUST_VERSION: "1.92.0"
+  SCITER_RUST_VERSION: "1.92.0"
   TAG_NAME: "${{ inputs.upload-tag }}"
-  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-  VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
-  ARMV7_VCPKG_COMMIT_ID: "6f29f12e82a8293156836ad81cc9bf5af41fe836"
-  MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
-  UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
+  VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
 
 permissions:
   contents: write
@@ -249,32 +247,3 @@ jobs:
           files: |
             ./SignOutput/rustdesk-*.msi
             ./SignOutput/rustdesk-*.exe
-
-  publish_unsigned:
-    needs:
-      - build-for-windows-flutter
-    runs-on: ubuntu-latest
-    if: ${{ inputs.upload-artifact }}
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@master
-        with:
-          name: rustdesk-unsigned-windows-x86_64
-          path: ./windows-x86_64/
-
-      - name: Download Artifacts
-        uses: actions/download-artifact@master
-        with:
-          name: rustdesk-unsigned-windows-x86
-          path: ./windows-x86/
-
-      - name: Combine unsigned app
-        run: |
-          tar czf windows-x86_64 windows-x86
-
-      - name: Publish unsigned app
-        uses: softprops/action-gh-release@v1
-        with:
-          prerelease: true
-          tag_name: ${{ env.TAG_NAME }}
-          files: rustdesk-${{ env.VERSION }}-unsigned.tar.gz
