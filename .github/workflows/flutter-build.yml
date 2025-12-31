@@ -72,13 +72,6 @@ jobs:
           name: bridge-artifact
           path: ./
           
-      - name: Cache Windows Build
-        id: cache-windows-build
-        uses: actions/cache@v3
-        with:
-          path: /tmp/
-          key: flutter-windows
-
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
