@@ -5,8 +5,8 @@ env:
   RUST_VERSION: "1.92.0"
 
 jobs:
-  generate-bridge:
-    uses: ./.github/workflows/bridge.yml
+  # generate-bridge:
+  #   uses: ./.github/workflows/bridge.yml
   build-for-macOS:
     name: ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
@@ -63,7 +63,7 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: bridge-artifact
-          path: ./src
+          path: ./
 
       - name: Setup vcpkg with Github Actions binary cache
         uses: lukka/run-vcpkg@v11
