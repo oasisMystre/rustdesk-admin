@@ -10,7 +10,7 @@ jobs:
   build-for-macOS:
     name: ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    needs: [generate-bridge]
+    # needs: [generate-bridge]
     strategy:
       fail-fast: false
       matrix:
