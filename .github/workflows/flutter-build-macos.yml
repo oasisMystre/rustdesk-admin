@@ -42,13 +42,13 @@ jobs:
               arch: x86_64,
               vcpkg-triplet: x64-osx,
             }
-          # - {
-          #     target: aarch64-apple-darwin,
-          #     os: macos-14,
-          #     extra-build-args: "--screencapturekit",
-          #     arch: aarch64,
-          #     vcpkg-triplet: arm64-osx,
-          #   }
+          - {
+              target: aarch64-apple-darwin,
+              os: macos-14,
+              extra-build-args: "--screencapturekit",
+              arch: aarch64,
+              vcpkg-triplet: arm64-osx,
+            }
     steps:
       - name: Export GitHub Actions cache environment variables
         uses: actions/github-script@v6

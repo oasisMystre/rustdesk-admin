@@ -1,0 +1,127 @@
+on:
+  workflow_call:
+
+env:
+  RUST_VERSION: "1.92.0"
+
+jobs:
+  generate-bridge:
+    uses: ./.github/workflows/bridge.yml
+  build-for-macOS:
+    name: ${{ matrix.job.target }}
+    runs-on: ${{ matrix.job.os }}
+    needs: [generate-bridge]
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - {
+              arch: x86_64,
+              os: macos-15-intel,
+              extra-build-args: "",
+              vcpkg-triplet: x64-osx,
+              target: x86_64-apple-darwin,
+            }
+          - {
+              os: macos-14,
+              arch: aarch64,
+              vcpkg-triplet: arm64-osx,
+              target: aarch64-apple-darwin,
+              extra-build-args: ",screencapturekit",
+            }
+    steps:
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install NASM
+        run: |
+          wget https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/macosx/nasm-2.16.03-macosx.zip
+          unzip nasm-2.16.03-macosx.zip
+          sudo cp nasm-2.16.03/nasm /usr/local/bin/nasm
+          nasm --version
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ matrix.job.target }}
+          components: "rustfmt"
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: ${{ matrix.job.os }}
+
+      - name: Restore bridge files
+        uses: actions/download-artifact@master
+        with:
+          name: bridge-artifact
+          path: ./src
+
+      - name: Setup vcpkg with Github Actions binary cache
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+          doNotCache: false
+
+      - name: Install vcpkg dependencies
+        run: |
+          if ! $VCPKG_ROOT/vcpkg \
+            install \
+            --x-install-root="$VCPKG_ROOT/installed"; then
+            find "${VCPKG_ROOT}/" -name "*.log" | while read -r _1; do
+              echo "$_1:"
+              echo "======"
+              cat "$_1"
+              echo "======"
+              echo ""
+            done
+            exit 1
+          fi
+          head -n 100 "${VCPKG_ROOT}/buildtrees/ffmpeg/build-${{ matrix.job.vcpkg-triplet }}-rel-out.log" || true
+
+      - name: Build rustdesk
+        run: |
+          cargo build --features="hwcodec,flutter,unix-file-copy-paste${{ matrix.job.extra-build-args }}" --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rust-${{ matrix.job.arch }}
+          path: target/${{ matrix.job.arch }}/liblibrustdesk.dylib
+
+  create-universal-dylib:
+    name: Create univeesal dylib
+    runs-on: macos-14
+    needs: [build-for-macOS]
+    steps:
+      - name: Download x64_64 artifact
+        uses: actions/download-artifact@master
+        with:
+          name: rust-x64_64
+          path: target/x86_64-apple-darwin
+      - name: Download aarch64 artifact
+        uses: actions/download-artifact@master
+        with:
+          name: rust-aarch64
+          path: target/aarch64-apple-darwin
+      - name: Create universal dylib
+        run: |
+          if ! command -v lipo &>/dev/null; then
+            brew install lipo
+          fi
+          mkdir -p target/universal
+          lipo -create \
+          target/aarch64-apple-darwin/release/liblibrustdesk.dylib \
+          target/x86_64-apple-darwin/release/liblibrustdesk.dylib \
+          -output target/universal/liblibrustdesk.dylib
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rust-universal
+          path: target/universal/liblibrustdesk.dylib

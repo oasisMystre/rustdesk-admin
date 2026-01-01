@@ -5,7 +5,7 @@ on:
 
 jobs:
   run-ci:
-    uses: ./.github/workflows/flutter-build-macos.yml
+    uses: ./.github/workflows/flutter-build-macos-rust.yml
     with:
       upload-artifact: true
     secrets: inherit 
