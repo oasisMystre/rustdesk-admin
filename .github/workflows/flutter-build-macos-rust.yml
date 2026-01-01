@@ -5,12 +5,12 @@ env:
   RUST_VERSION: "1.92.0"
 
 jobs:
-  # generate-bridge:
-  #   uses: ./.github/workflows/bridge.yml
+  generate-bridge:
+    uses: ./.github/workflows/bridge.yml
   build-for-macOS:
     name: ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    # needs: [generate-bridge]
+    needs: [generate-bridge]
     strategy:
       fail-fast: false
       matrix:
