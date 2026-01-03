@@ -53,4 +53,7 @@ vcpkg_installed
 flutter/lib/generated_plugin_registrant.dart
 libsciter.dylib
 flutter/web/
-.vs
+*.zip
+sha256sums
+*_tmp
+*/portable/Runner.res
