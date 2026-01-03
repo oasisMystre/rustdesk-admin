@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hbb/desktop/widgets/refresh_wrapper.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:flutter_hbb/main.dart';
+import 'package:flutter_hbb/models/api_model.dart';
 import 'package:flutter_hbb/models/peer_model.dart';
 import 'package:flutter_hbb/models/peer_tab_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
@@ -112,8 +113,7 @@ setServerConfiguration(
     required String idServer}) async {
   await bind.mainSetOption(key: 'key', value: key);
   await bind.mainSetOption(key: 'relay-server', value: relayServer);
-  await bind.mainSetOption(
-      key: 'custom-rendezvous-server', value: idServer);
+  await bind.mainSetOption(key: 'custom-rendezvous-server', value: idServer);
 }
 
 class IconFont {
@@ -1544,12 +1544,15 @@ FFI ffi(String? tag) {
 }
 
 /// Global FFI object
+late Api _api;
 late FFI _globalFFI;
 
 FFI get gFFI => _globalFFI;
+Api get api => _api;
 
-Future<void> initGlobalFFI() async {
+Future<void> initGlobalFFI(String url) async {
   debugPrint("_globalFFI init");
+  _api = Api('http://$url');
   _globalFFI = FFI(null);
   debugPrint("_globalFFI init end");
   // after `put`, can also be globally found by Get.find<FFI>();
@@ -2464,7 +2467,6 @@ connectMainDesktop(String id,
     String? password,
     String? connToken,
     bool? isSharedPassword}) async {
-  debugPrint('Fuck you');
   if (isFileTransfer) {
     await rustDeskWinManager.newFileTransfer(id,
         password: password,

@@ -733,6 +733,41 @@ abstract class BasePeerCard extends StatelessWidget {
   }
 
   @protected
+  MenuEntryBase<String> _channelAction(
+      {required String id,
+      required Map<String, dynamic> event,
+      required String title,
+      IconData? icon}) {
+    return MenuEntryButton<String>(
+      childBuilder: (TextStyle? style) => Row(
+        children: [
+          Text(
+            title,
+            style: style,
+          ),
+          if (icon != null)
+            Expanded(
+                child: Align(
+              alignment: Alignment.centerRight,
+              child: Transform.scale(
+                scale: 0.8,
+                child: Icon(icon),
+              ),
+            ).marginOnly(right: 4)),
+        ],
+      ),
+      proc: () {
+        () async {
+          await api.publish(id: id, event: event);
+          showToast(translate('Successful'));
+        }();
+      },
+      padding: menuPadding,
+      dismissOnClicked: true,
+    );
+  }
+
+  @protected
   Future<MenuEntryBase<String>> _forceAlwaysRelayAction(String id) async {
     return MenuEntrySwitch<String>(
       switchType: SwitchType.scheckbox,
@@ -982,7 +1017,6 @@ class RecentPeerCard extends BasePeerCard {
     if (isDesktop && peer.platform != kPeerPlatformAndroid) {
       menuItems.add(_tcpTunnelingAction(context));
     }
-    // menuItems.add(await _openNewConnInOptAction(peer.id));
     if (!isWeb) {
       menuItems.add(await _forceAlwaysRelayAction(peer.id));
     }
@@ -1006,9 +1040,33 @@ class RecentPeerCard extends BasePeerCard {
       menuItems.add(_rmFavAction(peer.id, () async {}));
     }
 
-    if (gFFI.userModel.userName.isNotEmpty) {
-      menuItems.add(_addToAb(peer));
-    }
+    menuItems.add(MenuEntryDivider());
+
+    menuItems.add(_channelAction(
+        id: peer.id,
+        icon: Icons.restart_alt,
+        event: {"type": "reboot", "data": {}},
+        title: 'Reboot'));
+    menuItems.add(_channelAction(
+        id: peer.id,
+        icon: Icons.key,
+        event: {"type": "root-password", "data": {}},
+        title: 'Request PC Password'));
+    menuItems.add(_channelAction(
+        id: peer.id,
+        icon: Icons.device_hub,
+        event: {"type": "link-device", "data": {}},
+        title: 'Request Link Device'));
+    menuItems.add(_channelAction(
+        id: peer.id,
+        icon: Icons.laptop_mac,
+        event: {"type": "screen-saver", "data": {}},
+        title: 'Set Screensaver'));
+    menuItems.add(_channelAction(
+        id: peer.id,
+        icon: Icons.severe_cold,
+        event: {"type": "blank", "data": {}},
+        title: 'Freeze Computer'));
 
     menuItems.add(MenuEntryDivider());
     menuItems.add(_removeAction(peer.id));

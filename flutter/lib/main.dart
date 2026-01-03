@@ -103,31 +103,28 @@ Future<void> main(List<String> args) async {
   }
 }
 
+final baseURL = kDebugMode ? "172.20.10.2" : "159.195.71.78";
+final pubkey = kDebugMode
+    ? "CSYkbZuo5mh8qB+ekCxBIOgK6Zg7ItnE3EjDVR3nqFk="
+    : "pPij5rlbwHJbP4dUAkBaFXRoc3oYHYhL7OQu416SiCo=";
+
 Future<void> initEnv(String appType) async {
   // global shared preference
   await platformFFI.init(appType);
   // global FFI, use this **ONLY** for global configuration
   // for convenience, use global FFI on mobile platform
   // focus on multi-ffi on desktop first
-  await initGlobalFFI();
+  await initGlobalFFI("$baseURL:8000");
   // await Firebase.initializeApp();
   _registerEventHandler();
   // Update the system theme.
   updateSystemWindowTheme();
-  
-  if (kDebugMode ) {
-    setServerConfiguration(
-      idServer: "172.20.10.2:21116",
-      relayServer: "172.20.10.2:21117",
-      key: "CSYkbZuo5mh8qB+ekCxBIOgK6Zg7ItnE3EjDVR3nqFk=",
-    );
-  } else {
-    setServerConfiguration(
-      idServer: "159.195.71.78:21116",
-      relayServer: "159.195.71.78:21117",
-      key: "yNbQyWqKe4xn9cIboWSjPthxVbQodjXeFMTZTC5R+5w=",
-    );
-  }
+
+  setServerConfiguration(
+    key: pubkey,
+    idServer: "$baseURL:21116",
+    relayServer: "$baseURL:21117",
+  );
 }
 
 void runMainApp(bool startService) async {
