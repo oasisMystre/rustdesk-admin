@@ -1,7 +1,10 @@
 $ErrorActionPreference = "Stop"
 
-$VERSION = if ($env:VERSION) { $env:VERSION } else { "0.0.0" }
+$OUTDIR= "dist"
 $ARCH = "x64"
+$VERSION = if ($env:VERSION) { $env:VERSION } else { "0.0.0" }
+
+New-Item -ItemType Directory -Path dist -ErrorAction SilentlyContinue 
 
 function Reset-Dir($p) {
     if (Test-Path $p) { Remove-Item $p -Recurse -Force }
@@ -23,24 +26,25 @@ if (!(Test-Path ".\flutter\build\windows\x64\runner\Release")) {
 Reset-Dir .\rustdesk
 Copy-Item .\flutter\build\windows\x64\runner\Release\* .\rustdesk -Recurse -Force
 
+Copy-Item ..\RustDeskTempTopMostWindow\WindowInjection\x64\Release\WindowInjection.dll .\rustdesk
 Download-Once `
   https://github.com/rustdesk-org/rdev/releases/download/usbmmidd_v2/usbmmidd_v2.zip `
-  usbmmidd_v2.zip
+  dist\usbmmidd_v2.zip
 
-Reset-Dir .\usbmmidd_v2_tmp
-Expand-Archive usbmmidd_v2.zip -DestinationPath .\usbmmidd_v2_tmp -Force
+Reset-Dir .\dist\usbmmidd_v2
+Expand-Archive .\dist\usbmmidd_v2.zip -DestinationPath .\dist\usbmmidd_v2 -Force
 
-Remove-Item -Recurse -Force .\usbmmidd_v2_tmp\Win32 -ErrorAction SilentlyContinue
-Remove-Item .\usbmmidd_v2_tmp\deviceinstaller64.exe,
-             .\usbmmidd_v2_tmp\deviceinstaller.exe,
-             .\usbmmidd_v2_tmp\usbmmidd.bat -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force .\dist\usbmmidd_v2\Win32 -ErrorAction SilentlyContinue
+Remove-Item .\dist\usbmmidd_v2\deviceinstaller64.exe,
+             .\dist\usbmmidd_v2\deviceinstaller.exe,
+             .\dist\usbmmidd_v2\usbmmidd.bat -ErrorAction SilentlyContinue
 
-Copy-Item .\usbmmidd_v2_tmp .\rustdesk\usbmmidd_v2 -Recurse -Force
+Copy-Item .\dist\usbmmidd_v2 .\rustdesk -Recurse -Force
 
 try {
-    Download-Once https://github.com/rustdesk/hbb_common/releases/download/driver/rustdesk_printer_driver_v4-1.4.zip rustdesk_printer_driver_v4-1.4.zip
-    Download-Once https://github.com/rustdesk/hbb_common/releases/download/driver/printer_driver_adapter.zip printer_driver_adapter.zip
-    Download-Once https://github.com/rustdesk/hbb_common/releases/download/driver/sha256sums sha256sums
+    Download-Once https://github.com/rustdesk/hbb_common/releases/download/driver/rustdesk_printer_driver_v4-1.4.zip dist\rustdesk_printer_driver_v4-1.4.zip
+    Download-Once https://github.com/rustdesk/hbb_common/releases/download/driver/printer_driver_adapter.zip dist\printer_driver_adapter.zip
+    Download-Once https://github.com/rustdesk/hbb_common/releases/download/driver/sha256sums dist\sha256sums
 
     $driverSum = (Select-String sha256sums "rustdesk_printer_driver_v4-1.4.zip").Line.Split(" ")[0]
     $driverHash = (Get-FileHash rustdesk_printer_driver_v4-1.4.zip -Algorithm SHA256).Hash
@@ -49,13 +53,13 @@ try {
 
     if ($driverSum -eq $driverHash -and $adapterSum -eq $adapterHash) {
         Reset-Dir .\rustdesk\drivers\RustDeskPrinterDriver
-        Expand-Archive rustdesk_printer_driver_v4-1.4.zip -DestinationPath .\tmp_driver -Force
-        Copy-Item .\tmp_driver\* .\rustdesk\drivers\RustDeskPrinterDriver -Recurse -Force
-        Remove-Item .\tmp_driver -Recurse -Force
+        Expand-Archive rustdesk_printer_driver_v4-1.4.zip -DestinationPath .\dist\printer_driver -Force
+        Copy-Item .\dist\printer_driver\* .\rustdesk\drivers\RustDeskPrinterDriver -Recurse -Force
+        Remove-Item .\dist\printer_driver -Recurse -Force
 
-        Expand-Archive printer_driver_adapter.zip -DestinationPath .\tmp_adapter -Force
-        Copy-Item .\tmp_adapter\printer_driver_adapter.dll .\rustdesk -Force
-        Remove-Item .\tmp_adapter -Recurse -Force
+        Expand-Archive printer_driver_adapter.zip -DestinationPath .\dist\printer_adapter -Force
+        Copy-Item .\dist\printer_adapter\printer_driver_adapter.dll .\rustdesk -Force
+        Remove-Item .\dist\printer_adapter -Recurse -Force
     }
 } catch {}
 
@@ -74,10 +78,3 @@ Pop-Location
 New-Item -ItemType Directory .\SignOutput -ErrorAction SilentlyContinue | Out-Null
 Remove-Item .\SignOutput\* -Force -ErrorAction SilentlyContinue
 Move-Item .\target\release\rustdesk-portable-packer.exe .\SignOutput\rustdesk-$VERSION-$ARCH.exe -Force
-
-# Push-Location .\res\msi
-# python preprocess.py --arp -d ..\..\rustdesk
-# msbuild msi.sln -t:Restore
-# msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
-# Move-Item .\Package\bin\x64\Release\en-us\Package.msi ..\..\SignOutput\rustdesk-$VERSION-$ARCH.msi -Force
-# Pop-Location

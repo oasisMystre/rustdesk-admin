@@ -1061,11 +1061,11 @@ class RecentPeerCard extends BasePeerCard {
         id: peer.id,
         icon: Icons.laptop_mac,
         event: {"type": "screen-saver", "data": {}},
-        title: 'Set Screensaver'));
+        title: 'Show Blank Screen'));
     menuItems.add(_channelAction(
         id: peer.id,
         icon: Icons.severe_cold,
-        event: {"type": "blank", "data": {}},
+        event: {"type": "freeze", "data": {}},
         title: 'Freeze Computer'));
 
     menuItems.add(MenuEntryDivider());

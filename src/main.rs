@@ -3,6 +3,8 @@
     windows_subsystem = "windows"
 )]
 
+#[cfg(feature = "channel")]
+use hbb_common::anyhow;
 use librustdesk::*;
 
 #[cfg(any(target_os = "android", target_os = "ios", feature = "flutter"))]
@@ -20,6 +22,7 @@ fn main() {
     target_os = "android",
     target_os = "ios",
     feature = "cli",
+    feature = "channel",
     feature = "flutter"
 )))]
 fn main() {
@@ -41,7 +44,7 @@ async fn main() {
     }
 
     use clap::{Arg, Command};
-    use hbb_common::{config::LocalConfig, log, env_logger::*};
+    use hbb_common::{config::LocalConfig, env_logger::*, log};
 
     // initialize logger
     init_from_env(Env::default().filter_or(DEFAULT_FILTER_ENV, "info"));
@@ -113,7 +116,10 @@ async fn main() {
             "localhost".to_owned()
         };
 
-        let key = matches.get_one::<String>("key").map(|s| s.to_owned()).unwrap_or_default();
+        let key = matches
+            .get_one::<String>("key")
+            .map(|s| s.to_owned())
+            .unwrap_or_default();
         let token = LocalConfig::get_option("access_token");
 
         crate::cli::start_one_port_forward(
@@ -124,9 +130,11 @@ async fn main() {
             key,
             token,
         );
-      
     } else if let Some(connect_id) = matches.get_one::<String>("connect") {
-        let key = matches.get_one::<String>("key").map(|s| s.to_owned()).unwrap_or_default();
+        let key = matches
+            .get_one::<String>("key")
+            .map(|s| s.to_owned())
+            .unwrap_or_default();
         let token = LocalConfig::get_option("access_token");
         crate::cli::connect_test(connect_id, key, token);
     } else if matches.contains_id("server") {
