@@ -19,6 +19,7 @@ class StateGlobal {
   final svcStatus = SvcStatus.notReady.obs;
   final RxInt videoConnCount = 0.obs;
   final RxBool isFocused = false.obs;
+  final RxBool showScreenSaver = false.obs;
   // for mobile and web
   bool isInMainPage = true;
   bool isWebVisible = true;

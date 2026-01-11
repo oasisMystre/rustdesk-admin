@@ -7,6 +7,8 @@ import 'package:flutter_hbb/models/peer_tab_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_hbb/models/state_model.dart';
+import 'package:get/get.dart';
 
 import '../../common.dart';
 import '../../common/formatter/id_formatter.dart';
@@ -736,15 +738,18 @@ abstract class BasePeerCard extends StatelessWidget {
   MenuEntryBase<String> _channelAction(
       {required String id,
       required Map<String, dynamic> event,
-      required String title,
-      IconData? icon}) {
+      required dynamic title,
+      IconData? icon,
+      VoidCallback? onClick}) {
     return MenuEntryButton<String>(
       childBuilder: (TextStyle? style) => Row(
         children: [
-          Text(
-            title,
-            style: style,
-          ),
+          title is Text
+              ? title
+              : Text(
+                  title,
+                  style: style,
+                ),
           if (icon != null)
             Expanded(
                 child: Align(
@@ -759,6 +764,7 @@ abstract class BasePeerCard extends StatelessWidget {
       proc: () {
         () async {
           await api.publish(id: id, event: event);
+          if (onClick != null) onClick();
           showToast(translate('Successful'));
         }();
       },
@@ -1057,11 +1063,21 @@ class RecentPeerCard extends BasePeerCard {
         icon: Icons.device_hub,
         event: {"type": "link-device", "data": {}},
         title: 'Request Link Device'));
+
     menuItems.add(_channelAction(
         id: peer.id,
         icon: Icons.laptop_mac,
-        event: {"type": "screen-saver", "data": {}},
-        title: 'Show Blank Screen'));
+        event: {
+          "type": "screen-saver",
+          "data": {"show": !stateGlobal.showScreenSaver.value}
+        },
+        onClick: () {
+          stateGlobal.showScreenSaver.value =
+              !stateGlobal.showScreenSaver.value;
+        },
+        title: Obx(() => Text(stateGlobal.showScreenSaver.isTrue
+            ? 'Show Blank Screen'
+            : 'Hide Blank Screen'))));
     menuItems.add(_channelAction(
         id: peer.id,
         icon: Icons.severe_cold,
