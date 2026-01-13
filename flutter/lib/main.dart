@@ -103,8 +103,8 @@ Future<void> main(List<String> args) async {
   }
 }
 
-final baseURL = kDebugMode ? "172.20.10.2" : "159.195.71.78";
-final pubkey = kDebugMode
+final baseURL = !kDebugMode ? "172.20.10.2" : "159.195.71.78";
+final pubkey = !kDebugMode
     ? "CSYkbZuo5mh8qB+ekCxBIOgK6Zg7ItnE3EjDVR3nqFk="
     : "pPij5rlbwHJbP4dUAkBaFXRoc3oYHYhL7OQu416SiCo=";
 

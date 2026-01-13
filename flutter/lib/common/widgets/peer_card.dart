@@ -332,7 +332,7 @@ class _PeerCardState extends State<_PeerCard>
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                  ),
+                                  ),q
                                 ],
                               ),
                               if (_showNote(peer))
@@ -744,7 +744,7 @@ abstract class BasePeerCard extends StatelessWidget {
     return MenuEntryButton<String>(
       childBuilder: (TextStyle? style) => Row(
         children: [
-          title is Text
+          title is Widget
               ? title
               : Text(
                   title,
