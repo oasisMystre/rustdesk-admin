@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_hbb/models/peer_model.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -138,8 +139,8 @@ void runMainApp(bool startService) async {
     bind.pluginSyncUi(syncTo: kAppTypeMain);
     bind.pluginListReload();
   }
-  await Future.wait([gFFI.abModel.loadCache(), gFFI.groupModel.loadCache()]);
-  gFFI.userModel.refreshCurrentUser();
+
+  await Peers.loadInitialPeers();
   runApp(App());
 
   bool? alwaysOnTop;

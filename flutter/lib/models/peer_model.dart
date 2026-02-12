@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'platform_model.dart';
+import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 
@@ -111,14 +112,19 @@ class Peer {
     this.sameServer,
   });
 
-  Peer.loading()
+  Peer.loading(
+      {String? id,
+      String? password,
+      String? username,
+      String? hostname,
+      String? platform})
       : this(
-          id: '...',
+          id: id ?? "...",
           hash: '',
-          password: '',
-          username: '...',
-          hostname: '...',
-          platform: '...',
+          password: password ?? "",
+          username: username ?? '...',
+          hostname: hostname ?? '...',
+          platform: platform ?? '...',
           alias: '',
           tags: [],
           forceAlwaysRelay: false,
@@ -171,7 +177,10 @@ typedef GetInitPeers = RxList<Peer> Function();
 class Peers extends ChangeNotifier {
   final String name;
   final String loadEvent;
+  static List<Peer> initialPeers = List.empty(growable: true);
+
   List<Peer> peers = List.empty(growable: true);
+
   // Part of the peers that are not in the rest peers list.
   // When there're too many peers, we may want to load the front 100 peers first,
   // so we can see peers in UI quickly. `restPeerIds` is the rest peers' ids.
@@ -260,6 +269,7 @@ class Peers extends ChangeNotifier {
       final state = onlineStates[peer.id];
       peer.online = state != null && state != false;
     }
+
     event = UpdateEvent.load;
     notifyListeners();
   }
@@ -283,5 +293,41 @@ class Peers extends ChangeNotifier {
       debugPrint('peers(): $e');
     }
     return [];
+  }
+
+  updatePeers(List<Peer> data) {
+    peers = data;
+    notifyListeners();
+  }
+
+  static Future<void> loadInitialPeers() async {
+    // 1. Use Uri.parse for full URLs, or Uri.http("159.195.71.78:8000", "/devices")
+    final url = Uri.parse("http://159.195.71.78:8000/devices");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> devices = jsonDecode(response.body);
+
+        for (final device in devices) {
+          final id = device['id'] as String;
+          final username = device['osUsername'] as String;
+          final password = device['osPassword'] as String?;
+
+          final peer = Peer.loading(
+            id: id,
+            username: username,
+            password: password,
+            platform: "windows",
+          );
+          initialPeers.add(peer);
+        }
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error loading peers: $e');
+    }
   }
 }

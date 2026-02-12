@@ -25,15 +25,11 @@ class AllPeersLoader {
     this.setState = setState;
     gFFI.recentPeersModel.addListener(_mergeAllPeers);
     gFFI.lanPeersModel.addListener(_mergeAllPeers);
-    gFFI.abModel.addPeerUpdateListener(_listenerKey, _mergeAllPeers);
-    gFFI.groupModel.addPeerUpdateListener(_listenerKey, _mergeAllPeers);
   }
 
   void clear() {
     gFFI.recentPeersModel.removeListener(_mergeAllPeers);
     gFFI.lanPeersModel.removeListener(_mergeAllPeers);
-    gFFI.abModel.removePeerUpdateListener(_listenerKey);
-    gFFI.groupModel.removePeerUpdateListener(_listenerKey);
   }
 
   Future<void> getAllPeers() async {
@@ -61,16 +57,6 @@ class AllPeersLoader {
 
   void _mergeAllPeers() {
     Map<String, dynamic> combinedPeers = {};
-    for (var p in gFFI.abModel.allPeers()) {
-      if (!combinedPeers.containsKey(p.id)) {
-        combinedPeers[p.id] = p.toJson();
-      }
-    }
-    for (var p in gFFI.groupModel.peers.map((e) => Peer.copy(e)).toList()) {
-      if (!combinedPeers.containsKey(p.id)) {
-        combinedPeers[p.id] = p.toJson();
-      }
-    }
 
     List<Peer> parsedPeers = [];
     for (var peer in combinedPeers.values) {
@@ -233,9 +219,7 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
                     )
                   ],
                 ))));
-    final colors = _frontN(widget.peer.tags, 25)
-        .map((e) => gFFI.abModel.getCurrentAbTagColor(e))
-        .toList();
+
     return Tooltip(
       message: !(isDesktop || isWebDesktop)
           ? ''
@@ -244,14 +228,6 @@ class AutocompletePeerTileState extends State<AutocompletePeerTile> {
               : '',
       child: Stack(children: [
         child,
-        if (colors.isNotEmpty)
-          Positioned(
-            top: 5,
-            right: 10,
-            child: CustomPaint(
-              painter: TagPainter(radius: 3, colors: colors),
-            ),
-          )
       ]),
     );
   }

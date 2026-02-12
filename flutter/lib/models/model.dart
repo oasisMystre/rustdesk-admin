@@ -12,15 +12,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_hbb/common/widgets/peers_view.dart';
 import 'package:flutter_hbb/consts.dart';
-import 'package:flutter_hbb/models/ab_model.dart';
 import 'package:flutter_hbb/models/chat_model.dart';
 import 'package:flutter_hbb/models/cm_file_model.dart';
 import 'package:flutter_hbb/models/file_model.dart';
-import 'package:flutter_hbb/models/group_model.dart';
 import 'package:flutter_hbb/models/peer_model.dart';
 import 'package:flutter_hbb/models/peer_tab_model.dart';
 import 'package:flutter_hbb/models/printer_model.dart';
-import 'package:flutter_hbb/models/user_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:flutter_hbb/models/desktop_render_texture.dart';
 import 'package:flutter_hbb/models/terminal_model.dart';
@@ -410,16 +407,7 @@ class FfiModel with ChangeNotifier {
         handleReloading(evt);
       } else if (name == 'plugin_option') {
         handleOption(evt);
-      } else if (name == "sync_peer_hash_password_to_personal_ab") {
-        if (desktopType == DesktopType.main || isWeb || isMobile) {
-          final id = evt['id'];
-          final hash = evt['hash'];
-          if (id != null && hash != null) {
-            gFFI.abModel
-                .changePersonalHashPassword(id.toString(), hash.toString());
-          }
-        }
-      } else if (name == "cm_file_transfer_log") {
+      }  else if (name == "cm_file_transfer_log") {
         if (isDesktop) {
           gFFI.cmFileModel.onFileTransferLog(evt);
         }
@@ -3429,9 +3417,6 @@ class FFI {
   late final CanvasModel canvasModel; // session
   late final ChatModel chatModel; // session
   late final FileModel fileModel; // session
-  late final AbModel abModel; // global
-  late final GroupModel groupModel; // global
-  late final UserModel userModel; // global
   late final PeerTabModel peerTabModel; // global
   late final QualityMonitorModel qualityMonitorModel; // session
   late final RecordingModel recordingModel; // session
@@ -3457,10 +3442,7 @@ class FFI {
     canvasModel = CanvasModel(WeakReference(this));
     chatModel = ChatModel(WeakReference(this));
     fileModel = FileModel(WeakReference(this));
-    userModel = UserModel(WeakReference(this));
     peerTabModel = PeerTabModel(WeakReference(this));
-    abModel = AbModel(WeakReference(this));
-    groupModel = GroupModel(WeakReference(this));
     qualityMonitorModel = QualityMonitorModel(WeakReference(this));
     recordingModel = RecordingModel(WeakReference(this));
     inputModel = InputModel(WeakReference(this));
@@ -3470,7 +3452,9 @@ class FFI {
     recentPeersModel = Peers(
         name: PeersModelName.recent,
         loadEvent: LoadEvent.recent,
-        getInitPeers: null);
+        getInitPeers: () {
+          return Peers.initialPeers.obs;
+        });
     favoritePeersModel = Peers(
         name: PeersModelName.favorite,
         loadEvent: LoadEvent.favorite,

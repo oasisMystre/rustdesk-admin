@@ -3378,7 +3378,6 @@ Future<bool> setServerConfig(
       return false;
     }
   }
-  final oldApiServer = await bind.mainGetApiServer();
 
   // should set one by one
   await bind.mainSetOption(
@@ -3386,12 +3385,7 @@ Future<bool> setServerConfig(
   await bind.mainSetOption(key: 'relay-server', value: config.relayServer);
   await bind.mainSetOption(key: 'api-server', value: config.apiServer);
   await bind.mainSetOption(key: 'key', value: config.key);
-  final newApiServer = await bind.mainGetApiServer();
-  if (oldApiServer.isNotEmpty &&
-      oldApiServer != newApiServer &&
-      gFFI.userModel.isLogin) {
-    gFFI.userModel.logOut(apiServer: oldApiServer);
-  }
+  
   return true;
 }
 
@@ -3727,12 +3721,7 @@ Widget netWorkErrorWidget() {
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       Text(translate("network_error_tip")),
-      ElevatedButton(
-              onPressed: gFFI.userModel.refreshCurrentUser,
-              child: Text(translate("Retry")))
-          .marginSymmetric(vertical: 16),
-      SelectableText(gFFI.userModel.networkError.value,
-          style: TextStyle(fontSize: 11, color: Colors.red)),
+
     ],
   ));
 }
@@ -3917,5 +3906,5 @@ String decode_http_response(http.Response resp) {
 }
 
 bool peerTabShowNote(PeerTabIndex peerTabIndex) {
-  return peerTabIndex == PeerTabIndex.ab || peerTabIndex == PeerTabIndex.group;
+  return false;
 }

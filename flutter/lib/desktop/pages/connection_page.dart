@@ -300,7 +300,9 @@ class _ConnectionPageState extends State<ConnectionPage>
             child: Row(
           children: [
             _buildRemoteIDTextField(context),
-            SizedBox(width: 16,),
+            SizedBox(
+              width: 16,
+            ),
             Expanded(child: PeerTabPage()),
           ],
         ).paddingOnly(left: 12.0)),
@@ -321,6 +323,9 @@ class _ConnectionPageState extends State<ConnectionPage>
         isFileTransfer: isFileTransfer,
         isViewCamera: isViewCamera,
         isTerminal: isTerminal);
+    Peers.loadInitialPeers().then((_) async {
+      gFFI.recentPeersModel.updatePeers(Peers.initialPeers);
+    });
   }
 
   /// UI for the remote ID TextField.
