@@ -323,9 +323,7 @@ class _ConnectionPageState extends State<ConnectionPage>
         isFileTransfer: isFileTransfer,
         isViewCamera: isViewCamera,
         isTerminal: isTerminal);
-    Peers.loadInitialPeers().then((_) async {
-      gFFI.recentPeersModel.updatePeers(Peers.initialPeers);
-    });
+    gFFI.recentPeersModel.updatePeers(Peers.initialPeers);
   }
 
   /// UI for the remote ID TextField.

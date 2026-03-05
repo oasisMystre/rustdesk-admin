@@ -1576,7 +1576,9 @@ bool option2bool(String option, String value) {
   } else if (option.startsWith("allow-") ||
       option == kOptionStopService ||
       option == kOptionDirectServer ||
-      option == kOptionForceAlwaysRelay) {
+      option == kOptionForceAlwaysRelay ||
+      option == kOptionPrivacyMode ||
+      option == kOptionViewOnly) {
     res = value == "Y";
   } else {
     assert(false);
@@ -1594,7 +1596,9 @@ String bool2option(String option, bool b) {
   } else if (option.startsWith('allow-') ||
       option == kOptionStopService ||
       option == kOptionDirectServer ||
-      option == kOptionForceAlwaysRelay) {
+      option == kOptionForceAlwaysRelay ||
+      option == kOptionPrivacyMode ||
+      option == kOptionViewOnly) {
     res = b ? 'Y' : defaultOptionNo;
   } else {
     if (option != kOptionEnableUdpPunch && option != kOptionEnableIpv6Punch) {

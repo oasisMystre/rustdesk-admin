@@ -12,8 +12,8 @@ import 'model.dart';
 
 enum PeerTabIndex {
   recent,
-  fav,
-  lan,
+  online,
+  offline,
 }
 
 class PeerTabModel with ChangeNotifier {
@@ -23,13 +23,13 @@ class PeerTabModel with ChangeNotifier {
   static const int maxTabCount = 3;
   static const List<String> tabNames = [
     'Recent sessions',
-    'Favorites',
-    'Discovered',
+    'Online',
+    'Offline',
   ];
   static const List<IconData> icons = [
     Icons.access_time_filled,
-    Icons.star,
-    Icons.explore,
+    Icons.cloud_done,
+    Icons.cloud_off,
   ];
   List<bool> isEnabled = List.from([
     true,

@@ -43,10 +43,10 @@ class _PeerTabPageState extends State<PeerTabPage>
     _TabEntry(RecentPeersView(
       menuPadding: _menuPadding(),
     )),
-    _TabEntry(FavoritePeersView(
+    _TabEntry(OnlinePeersView(
       menuPadding: _menuPadding(),
     )),
-    _TabEntry(DiscoveredPeersView(
+    _TabEntry(OfflinePeersView(
       menuPadding: _menuPadding(),
     )),
   ];
@@ -66,6 +66,9 @@ class _PeerTabPageState extends State<PeerTabPage>
           : int.parse(uiType) == 1
               ? PeerUiType.tile
               : PeerUiType.list;
+    } else {
+      peerCardUiType.value = PeerUiType.grid;
+      bind.setLocalFlutterOption(k: kOptionPeerCardUiType, v: '0');
     }
   }
 
@@ -150,8 +153,35 @@ class _PeerTabPageState extends State<PeerTabPage>
                         decoration: (hover.value
                             ? (selected ? decoBorder : deco)
                             : (selected ? decoBorder : null)),
-                        child: Icon(model.tabIcon(t), color: color)
-                            .paddingSymmetric(horizontal: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(model.tabIcon(t), color: color)
+                                .paddingSymmetric(horizontal: 4),
+                            if (t == PeerTabIndex.online.index ||
+                                t == PeerTabIndex.offline.index)
+                              AnimatedBuilder(
+                                animation: gFFI.recentPeersModel,
+                                builder: (context, child) {
+                                  final count = t == PeerTabIndex.online.index
+                                      ? gFFI.recentPeersModel.peers
+                                          .where((p) => p.online)
+                                          .length
+                                      : gFFI.recentPeersModel.peers
+                                          .where((p) => !p.online)
+                                          .length;
+                                  return Text(
+                                    '$count',
+                                    style: TextStyle(
+                                      color: color,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ).paddingOnly(right: 6);
+                                },
+                              ),
+                          ],
+                        ),
                       ).paddingSymmetric(horizontal: 4),
                       onTap: isOptionFixed(kOptionPeerTabIndex)
                           ? null
@@ -320,7 +350,6 @@ class _PeerTabPageState extends State<PeerTabPage>
           child: Row(
             children: [
               deleteSelection(),
-              addSelectionToFav(),
             ],
           ),
         ),
@@ -343,33 +372,13 @@ class _PeerTabPageState extends State<PeerTabPage>
         onTap: () {
           onSubmit() async {
             final peers = model.selectedPeers;
-            switch (model.currentTab) {
-              case 0:
-                for (var p in peers) {
-                  await bind.mainRemovePeer(id: p.id);
-                }
-                bind.mainLoadRecentPeers();
-                break;
-              case 1:
-                final favs = (await bind.mainGetFav()).toList();
-                peers.map((p) {
-                  favs.remove(p.id);
-                }).toList();
-                await bind.mainStoreFav(favs: favs);
-                bind.mainLoadFavPeers();
-                break;
-              case 2:
-                for (var p in peers) {
-                  await bind.mainRemoveDiscovered(id: p.id);
-                }
-                bind.mainLoadLanPeers();
-                break;
-
-              default:
-                break;
+            for (var p in peers) {
+              await bind.mainRemovePeer(id: p.id);
             }
+            bind.mainLoadRecentPeers();
+
             gFFI.peerTabModel.setMultiSelectionMode(false);
-            if (model.currentTab != 3) showToast(translate('Successful'));
+            showToast(translate('Successful'));
           }
 
           deleteConfirmDialog(onSubmit, translate('Delete'));
@@ -377,30 +386,7 @@ class _PeerTabPageState extends State<PeerTabPage>
         child: Icon(Icons.delete, color: Colors.red));
   }
 
-  Widget addSelectionToFav() {
-    final model = Provider.of<PeerTabModel>(context);
-    return Offstage(
-      offstage:
-          model.currentTab != PeerTabIndex.recent.index, // show based on recent
-      child: _hoverAction(
-        context: context,
-        toolTip: translate('Add to Favorites'),
-        onTap: () async {
-          final peers = model.selectedPeers;
-          final favs = (await bind.mainGetFav()).toList();
-          for (var p in peers) {
-            if (!favs.contains(p.id)) {
-              favs.add(p.id);
-            }
-          }
-          await bind.mainStoreFav(favs: favs);
-          model.setMultiSelectionMode(false);
-          showToast(translate('Successful'));
-        },
-        child: Icon(PeerTabModel.icons[PeerTabIndex.fav.index]),
-      ).marginOnly(left: !(isDesktop || isWebDesktop) ? 11 : 6),
-    );
-  }
+
 
   Widget selectionCount(int count) {
     return Align(

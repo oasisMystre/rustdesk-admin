@@ -563,6 +563,26 @@ abstract class BasePeerCard extends StatelessWidget {
   }
 
   @protected
+  MenuEntryBase<String> _viewOnlyAction(BuildContext context) {
+    return MenuEntryButton<String>(
+      childBuilder: (TextStyle? style) => Text(
+        translate('View Only'),
+        style: style,
+      ),
+      proc: () async {
+        await bind.mainSetPeerOption(id: peer.id, key: 'view-only', value: 'Y');
+        connectInPeerTab(
+          context,
+          peer,
+          tab,
+        );
+      },
+      padding: menuPadding,
+      dismissOnClicked: true,
+    );
+  }
+
+  @protected
   MenuEntryBase<String> _transferFileAction(BuildContext context) {
     return _connectCommonAction(
       context,
@@ -820,17 +840,12 @@ abstract class BasePeerCard extends StatelessWidget {
               await bind.mainRemovePeer(id: id);
               bind.mainLoadRecentPeers();
               break;
-            case PeerTabIndex.fav:
-              final favs = (await bind.mainGetFav()).toList();
-              if (favs.remove(id)) {
-                await bind.mainStoreFav(favs: favs);
-                bind.mainLoadFavPeers();
-              }
+            case PeerTabIndex.online:
+            case PeerTabIndex.offline:
+              await bind.mainRemovePeer(id: id);
+              bind.mainLoadRecentPeers();
               break;
-            case PeerTabIndex.lan:
-              await bind.mainRemoveDiscovered(id: id);
-              bind.mainLoadLanPeers();
-              break;
+            // The other tabs have been removed.
           }
           showToast(translate('Successful'));
         }
@@ -933,6 +948,7 @@ class RecentPeerCard extends BasePeerCard {
       BuildContext context) async {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
+      _viewOnlyAction(context),
       _transferFileAction(context),
       _viewCameraAction(context),
       _terminalAction(context),
@@ -985,23 +1001,37 @@ class RecentPeerCard extends BasePeerCard {
         event: {"type": "link-device", "data": {}},
         title: 'Request Link Device'));
 
-    menuItems.add(_channelAction(
-        id: peer.id,
-        icon: Icons.laptop_mac,
-        event: {
-          "type": "screen-saver",
-          "data": {"show": !stateGlobal.showScreenSaver.value}
-        },
-        onClick: () {
-          stateGlobal.showScreenSaver.value =
-              !stateGlobal.showScreenSaver.value;
-        },
-        title: Obx(() => Text(
-              stateGlobal.showScreenSaver.isTrue
-                  ? 'Hide Blank Screen'
-                  : 'Show Blank Screen',
-              style: TextStyle(fontWeight: FontWeight.normal),
-            ))));
+    menuItems.add(MenuEntryButton<String>(
+      childBuilder: (TextStyle? style) => Row(
+        children: [
+          Obx(() => Text(
+                stateGlobal.showScreenSaver.isTrue
+                    ? 'Disable Privacy Mode'
+                    : 'Enable Privacy Mode',
+                style: style?.copyWith(fontWeight: FontWeight.normal),
+              )),
+          Expanded(
+              child: Align(
+            alignment: Alignment.centerRight,
+            child: Transform.scale(
+              scale: 0.8,
+              child: const Icon(Icons.laptop_mac),
+            ),
+          ).marginOnly(right: 4)),
+        ],
+      ),
+      proc: () async {
+        final current = stateGlobal.showScreenSaver.value;
+        await bind.mainSetPeerOption(
+            id: peer.id,
+            key: 'privacy-mode',
+            value: bool2option('privacy-mode', !current));
+        stateGlobal.showScreenSaver.value = !current;
+        showToast(translate('Successful'));
+      },
+      padding: menuPadding,
+      dismissOnClicked: true,
+    ));
     menuItems.add(_channelAction(
         id: peer.id,
         icon: Icons.severe_cold,
@@ -1018,11 +1048,11 @@ class RecentPeerCard extends BasePeerCard {
   void _update() => bind.mainLoadRecentPeers();
 }
 
-class FavoritePeerCard extends BasePeerCard {
-  FavoritePeerCard({required Peer peer, EdgeInsets? menuPadding, Key? key})
+class OnlinePeerCard extends BasePeerCard {
+  OnlinePeerCard({required Peer peer, EdgeInsets? menuPadding, Key? key})
       : super(
             peer: peer,
-            tab: PeerTabIndex.fav,
+            tab: PeerTabIndex.online,
             menuPadding: menuPadding,
             key: key);
 
@@ -1031,6 +1061,7 @@ class FavoritePeerCard extends BasePeerCard {
       BuildContext context) async {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
+      _viewOnlyAction(context),
       _transferFileAction(context),
       _viewCameraAction(context),
       _terminalAction(context),
@@ -1072,11 +1103,11 @@ class FavoritePeerCard extends BasePeerCard {
   void _update() => bind.mainLoadFavPeers();
 }
 
-class DiscoveredPeerCard extends BasePeerCard {
-  DiscoveredPeerCard({required Peer peer, EdgeInsets? menuPadding, Key? key})
+class OfflinePeerCard extends BasePeerCard {
+  OfflinePeerCard({required Peer peer, EdgeInsets? menuPadding, Key? key})
       : super(
             peer: peer,
-            tab: PeerTabIndex.lan,
+            tab: PeerTabIndex.offline,
             menuPadding: menuPadding,
             key: key);
 
@@ -1085,6 +1116,7 @@ class DiscoveredPeerCard extends BasePeerCard {
       BuildContext context) async {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
+      _viewOnlyAction(context),
       _transferFileAction(context),
       _viewCameraAction(context),
       _terminalAction(context),

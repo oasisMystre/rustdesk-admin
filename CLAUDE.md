@@ -32,7 +32,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Directory Structure
 - **`src/`** - Main Rust application code
-  - `src/ui/` - Legacy Sciter UI (deprecated, use Flutter instead)
   - `src/server/` - Audio/clipboard/input/video services and network connections
   - `src/client.rs` - Peer connection handling
   - `src/platform/` - Platform-specific code
@@ -51,7 +50,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **File Transfer**: Secure file transfer implementation in `libs/hbb_common/`
 
 ### UI Architecture
-- **Legacy UI**: Sciter-based (deprecated) - files in `src/ui/`
 - **Modern UI**: Flutter-based - files in `flutter/`
   - Desktop: `flutter/lib/desktop/`
   - Mobile: `flutter/lib/mobile/`

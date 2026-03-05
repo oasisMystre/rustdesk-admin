@@ -301,8 +301,9 @@ class Peers extends ChangeNotifier {
   }
 
   static Future<void> loadInitialPeers() async {
-    // 1. Use Uri.parse for full URLs, or Uri.http("159.195.71.78:8000", "/devices")
-    final url = Uri.parse("http://159.195.71.78:8000/devices");
+    final url = Uri.parse(!kDebugMode
+        ? "http://172.20.10.2:8000/devices"
+        : "http://159.195.71.78:8000/devices");
 
     try {
       final response = await http.get(url);
@@ -321,7 +322,13 @@ class Peers extends ChangeNotifier {
             password: password,
             platform: "windows",
           );
-          initialPeers.add(peer);
+          
+          final existingIndex = initialPeers.indexWhere((p) => p.id == id);
+          if (existingIndex != -1) {
+            initialPeers[existingIndex] = peer;
+          } else {
+            initialPeers.add(peer);
+          }
         }
       } else {
         print('Request failed with status: ${response.statusCode}');

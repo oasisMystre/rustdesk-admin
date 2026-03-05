@@ -419,13 +419,9 @@ abstract class BasePeersView extends StatelessWidget {
     Peers peers;
     switch (peerTabIndex) {
       case PeerTabIndex.recent:
+      case PeerTabIndex.online:
+      case PeerTabIndex.offline:
         peers = gFFI.recentPeersModel;
-        break;
-      case PeerTabIndex.fav:
-        peers = gFFI.favoritePeersModel;
-        break;
-      case PeerTabIndex.lan:
-        peers = gFFI.lanPeersModel;
         break;
     }
 
@@ -457,13 +453,14 @@ class RecentPeersView extends BasePeersView {
   }
 }
 
-class FavoritePeersView extends BasePeersView {
-  FavoritePeersView(
+class OnlinePeersView extends BasePeersView {
+  OnlinePeersView(
       {Key? key, EdgeInsets? menuPadding, ScrollController? scrollController})
       : super(
           key: key,
-          peerTabIndex: PeerTabIndex.fav,
-          peerCardBuilder: (Peer peer) => FavoritePeerCard(
+          peerTabIndex: PeerTabIndex.online,
+          peerFilter: (Peer peer) => peer.online,
+          peerCardBuilder: (Peer peer) => RecentPeerCard(
             peer: peer,
             menuPadding: menuPadding,
           ),
@@ -472,18 +469,19 @@ class FavoritePeersView extends BasePeersView {
   @override
   Widget build(BuildContext context) {
     final widget = super.build(context);
-    bind.mainLoadFavPeers();
+    bind.mainLoadRecentPeers();
     return widget;
   }
 }
 
-class DiscoveredPeersView extends BasePeersView {
-  DiscoveredPeersView(
+class OfflinePeersView extends BasePeersView {
+  OfflinePeersView(
       {Key? key, EdgeInsets? menuPadding, ScrollController? scrollController})
       : super(
           key: key,
-          peerTabIndex: PeerTabIndex.lan,
-          peerCardBuilder: (Peer peer) => DiscoveredPeerCard(
+          peerTabIndex: PeerTabIndex.offline,
+          peerFilter: (Peer peer) => !peer.online,
+          peerCardBuilder: (Peer peer) => RecentPeerCard(
             peer: peer,
             menuPadding: menuPadding,
           ),
@@ -492,8 +490,7 @@ class DiscoveredPeersView extends BasePeersView {
   @override
   Widget build(BuildContext context) {
     final widget = super.build(context);
-    bind.mainLoadLanPeers();
-    bind.mainDiscover();
+    bind.mainLoadRecentPeers();
     return widget;
   }
 }
