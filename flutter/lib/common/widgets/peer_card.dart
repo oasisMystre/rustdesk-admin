@@ -1,4 +1,3 @@
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hbb/common/widgets/dialog.dart';
@@ -7,8 +6,6 @@ import 'package:flutter_hbb/models/peer_tab_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_hbb/models/state_model.dart';
-import 'package:get/get.dart';
 
 import '../../common.dart';
 import '../../common/formatter/id_formatter.dart';
@@ -565,20 +562,31 @@ abstract class BasePeerCard extends StatelessWidget {
   @protected
   MenuEntryBase<String> _viewOnlyAction(BuildContext context) {
     return MenuEntryButton<String>(
-      childBuilder: (TextStyle? style) => Text(
-        translate('View Only'),
-        style: style,
+      childBuilder: (TextStyle? style) => Row(
+        children: [
+          Text(
+            "View Only",
+            style: style?.copyWith(fontWeight: FontWeight.normal),
+          ),
+          Obx(
+            () => Expanded(
+                child: Align(
+              alignment: Alignment.centerRight,
+              child: Checkbox(
+                value: stateGlobal.viewOnlyMode(peer.id).value,
+                onChanged: null,
+              ),
+            ).marginOnly(right: 4)),
+          )
+        ],
       ),
       proc: () async {
-        await bind.mainSetPeerOption(id: peer.id, key: 'view-only', value: 'Y');
-        connectInPeerTab(
-          context,
-          peer,
-          tab,
-        );
+        bool current = stateGlobal.viewOnlyMode(peer.id).value;
+        stateGlobal.setViewOnlyMode(peer.id, !current);
+        showToast("Successful");
       },
-      padding: menuPadding,
       dismissOnClicked: true,
+      padding: menuPadding,
     );
   }
 
@@ -1005,7 +1013,7 @@ class RecentPeerCard extends BasePeerCard {
       childBuilder: (TextStyle? style) => Row(
         children: [
           Obx(() => Text(
-                stateGlobal.showScreenSaver.isTrue
+                stateGlobal.privacyMode(peer.id).isTrue
                     ? 'Disable Privacy Mode'
                     : 'Enable Privacy Mode',
                 style: style?.copyWith(fontWeight: FontWeight.normal),
@@ -1021,12 +1029,8 @@ class RecentPeerCard extends BasePeerCard {
         ],
       ),
       proc: () async {
-        final current = stateGlobal.showScreenSaver.value;
-        await bind.mainSetPeerOption(
-            id: peer.id,
-            key: 'privacy-mode',
-            value: bool2option('privacy-mode', !current));
-        stateGlobal.showScreenSaver.value = !current;
+        bool current = stateGlobal.privacyMode(peer.id).value;
+        stateGlobal.setPrivacyMode(peer.id, !current);
         showToast(translate('Successful'));
       },
       padding: menuPadding,

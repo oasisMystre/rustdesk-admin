@@ -19,7 +19,8 @@ class StateGlobal {
   final svcStatus = SvcStatus.notReady.obs;
   final RxInt videoConnCount = 0.obs;
   final RxBool isFocused = false.obs;
-  final RxBool showScreenSaver = false.obs;
+  final RxBool _privacyMode = false.obs;
+  final RxBool _viewOnlyMode = false.obs;
   // for mobile and web
   bool isInMainPage = true;
   bool isWebVisible = true;
@@ -40,6 +41,22 @@ class StateGlobal {
   RxBool get showTabBar => _showTabBar;
   RxDouble get resizeEdgeSize => _resizeEdgeSize;
   RxDouble get windowBorderWidth => _windowBorderWidth;
+  RxBool privacyMode(String peerId) {
+    bool value = mainGetPeerBoolOptionSync(peerId, kOptionPrivacyMode);
+    if (value != _privacyMode.value) {
+      _privacyMode.value = value;
+    }
+
+    return _privacyMode;
+  }
+  RxBool viewOnlyMode(String peerId) {
+    bool value = mainGetPeerBoolOptionSync(peerId, kOptionViewOnly);
+    if (value != _viewOnlyMode.value) {
+      _viewOnlyMode.value = value;
+    }
+
+    return _viewOnlyMode;
+  }
 
   resetLastResolutionGroupValues(String peerId) {
     _lastResolutionGroupValues[peerId] = {};
@@ -81,6 +98,26 @@ class StateGlobal {
       } else {
         procFullscreenNative(procWnd);
       }
+    }
+  }
+
+  setPrivacyMode(String peerId, bool value) {
+    if (_privacyMode.value != value) {
+      _privacyMode.value = value;
+      bind.mainSetPeerOptionSync(
+          id: peerId,
+          key: kOptionPrivacyMode,
+          value: bool2option(kOptionPrivacyMode, value));
+    }
+  }
+  
+  setViewOnlyMode(String peerId, bool value) {
+    if (_viewOnlyMode.value != value) {
+      _viewOnlyMode.value = value;
+      bind.mainSetPeerOptionSync(
+          id: peerId,
+          key: kOptionViewOnly,
+          value: bool2option(kOptionViewOnly, value));
     }
   }
 

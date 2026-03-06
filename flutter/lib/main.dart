@@ -140,7 +140,7 @@ void runMainApp(bool startService) async {
     bind.pluginListReload();
   }
 
-  await Peers.loadInitialPeers();
+ await Peers.loadInitialPeers();
   runApp(App());
 
   bool? alwaysOnTop;

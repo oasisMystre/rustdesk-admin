@@ -3389,7 +3389,7 @@ Future<bool> setServerConfig(
   await bind.mainSetOption(key: 'relay-server', value: config.relayServer);
   await bind.mainSetOption(key: 'api-server', value: config.apiServer);
   await bind.mainSetOption(key: 'key', value: config.key);
-  
+
   return true;
 }
 
@@ -3725,7 +3725,6 @@ Widget netWorkErrorWidget() {
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       Text(translate("network_error_tip")),
-
     ],
   ));
 }
