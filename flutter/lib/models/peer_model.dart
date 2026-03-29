@@ -301,7 +301,7 @@ class Peers extends ChangeNotifier {
   }
 
   static Future<void> loadInitialPeers() async {
-    final url = Uri.parse(!kDebugMode
+    final url = Uri.parse(kDebugMode
         ? "http://172.20.10.2:8000/devices"
         : "http://159.195.71.78:8000/devices");
 
